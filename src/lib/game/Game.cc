@@ -41,6 +41,7 @@ Game::Game()
       true,  // disabled
       false, // terminated
       Color::White,
+      Color::Black,
     })
   , m_menus()
   , m_board(std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS))
@@ -48,6 +49,7 @@ Game::Game()
   setService("game");
 
   m_state.playerColor = m_board->playerColor();
+  m_state.aiColor     = m_board->aiColor();
 }
 
 Game::~Game() {}
@@ -122,7 +124,17 @@ void Game::setPlayerColor(const Color &color)
   }
 
   m_menus.colors[m_state.playerColor]->setEnabled(true);
+  m_menus.colors[m_state.aiColor]->setEnabled(true);
+
+  m_board->changeColorOf(Owner::Player, color);
+  const auto aiColor = determineAiBestMove();
+  m_board->changeColorOf(Owner::AI, aiColor);
+
   m_menus.colors[color]->setEnabled(false);
+  if (m_board->isPlayerAndAiInContact())
+  {
+    m_menus.colors[m_board->aiColor()]->setEnabled(false);
+  }
 
   m_state.playerColor = color;
   info("player now has color " + colorName(m_state.playerColor));
@@ -211,6 +223,11 @@ auto Game::generateColorButtons(int width, int height) -> std::vector<MenuShPtr>
 
   out.push_back(colors);
   return out;
+}
+
+auto Game::determineAiBestMove() const noexcept -> Color
+{
+  return Color::White;
 }
 
 bool Game::TimedMenu::update(bool active) noexcept

@@ -44,6 +44,53 @@ Color Board::playerColor() const noexcept
   return at(0, 0).color;
 }
 
+Color Board::aiColor() const noexcept
+{
+  return at(width() - 1, height() - 1).color;
+}
+
+bool Board::isPlayerAndAiInContact() const noexcept
+{
+  const auto max       = static_cast<int>(m_cells.size());
+  const auto validCell = [&max](const int index) { return index >= 0 && index < max; };
+
+  for (auto y = 0; y < height(); ++y)
+  {
+    for (auto x = 0; x < width(); ++x)
+    {
+      const auto c = m_cells[linear(x, y)];
+      if (c.owner != Owner::Player)
+      {
+        continue;
+      }
+
+      const auto top    = linear(x, y + 1);
+      const auto bottom = linear(x, y - 1);
+      const auto left   = linear(x - 1, y);
+      const auto right  = linear(x + 1, y);
+
+      if (validCell(top) && m_cells[top].owner == Owner::AI)
+      {
+        return true;
+      }
+      if (validCell(bottom) && m_cells[bottom].owner == Owner::AI)
+      {
+        return true;
+      }
+      if (validCell(left) && m_cells[left].owner == Owner::AI)
+      {
+        return true;
+      }
+      if (validCell(right) && m_cells[right].owner == Owner::AI)
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 float Board::occupiedBy(const Owner &owner) const noexcept
 {
   return 1.0f
@@ -51,6 +98,16 @@ float Board::occupiedBy(const Owner &owner) const noexcept
                          m_cells.end(),
                          [&owner](const Cell &c) { return c.owner == owner; })
          / m_cells.size();
+}
+
+void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
+{
+  std::for_each(m_cells.begin(), m_cells.end(), [&owner, &color](Cell &c) {
+    if (c.owner == owner)
+    {
+      c.color = color;
+    }
+  });
 }
 
 void Board::initialize()

@@ -59,7 +59,13 @@ class Board : public utils::CoreObject
 
   Color playerColor() const noexcept;
 
+  Color aiColor() const noexcept;
+
+  bool isPlayerAndAiInContact() const noexcept;
+
   float occupiedBy(const Owner &owner) const noexcept;
+
+  void changeColorOf(const Owner &owner, const Color &color) noexcept;
 
   private:
   int m_width;
