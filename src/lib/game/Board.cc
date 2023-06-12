@@ -51,9 +51,6 @@ Color Board::aiColor() const noexcept
 
 bool Board::isPlayerAndAiInContact() const noexcept
 {
-  const auto max       = static_cast<int>(m_cells.size());
-  const auto validCell = [&max](const int index) { return index >= 0 && index < max; };
-
   for (auto y = 0; y < height(); ++y)
   {
     for (auto x = 0; x < width(); ++x)
@@ -64,24 +61,7 @@ bool Board::isPlayerAndAiInContact() const noexcept
         continue;
       }
 
-      const auto top    = linear(x, y + 1);
-      const auto bottom = linear(x, y - 1);
-      const auto left   = linear(x - 1, y);
-      const auto right  = linear(x + 1, y);
-
-      if (validCell(top) && m_cells[top].owner == Owner::AI)
-      {
-        return true;
-      }
-      if (validCell(bottom) && m_cells[bottom].owner == Owner::AI)
-      {
-        return true;
-      }
-      if (validCell(left) && m_cells[left].owner == Owner::AI)
-      {
-        return true;
-      }
-      if (validCell(right) && m_cells[right].owner == Owner::AI)
+      if (hasBorderWith(x, y, Owner::AI))
       {
         return true;
       }
@@ -108,6 +88,18 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
       c.color = color;
     }
   });
+
+  for (auto y = 0; y < height(); ++y)
+  {
+    for (auto x = 0; x < width(); ++x)
+    {
+      auto &c = m_cells[linear(x, y)];
+      if (c.owner != owner && c.color == color && hasBorderWith(x, y, owner))
+      {
+        c.owner = owner;
+      }
+    }
+  }
 }
 
 void Board::initialize()
@@ -139,6 +131,39 @@ void Board::initialize()
 int Board::linear(int x, int y) const noexcept
 {
   return y * width() + x;
+}
+
+bool Board::hasBorderWith(int x, int y, const Owner &owner) const noexcept
+{
+  const auto w         = width();
+  const auto h         = height();
+  const auto validCell = [&w, &h](const int x, const int y) {
+    return x >= 0 && y >= 0 && x < w && y < h;
+  };
+
+  const auto top    = linear(x, y + 1);
+  const auto bottom = linear(x, y - 1);
+  const auto left   = linear(x - 1, y);
+  const auto right  = linear(x + 1, y);
+
+  if (validCell(x, y + 1) && m_cells[top].owner == owner)
+  {
+    return true;
+  }
+  if (validCell(x, y - 1) && m_cells[bottom].owner == owner)
+  {
+    return true;
+  }
+  if (validCell(x - 1, y) && m_cells[left].owner == owner)
+  {
+    return true;
+  }
+  if (validCell(x + 1, y) && m_cells[right].owner == owner)
+  {
+    return true;
+  }
+
+  return false;
 }
 
 Color generateRandomColor() noexcept

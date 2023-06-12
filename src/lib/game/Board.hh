@@ -75,6 +75,7 @@ class Board : public utils::CoreObject
 
   void initialize();
   int linear(int x, int y) const noexcept;
+  bool hasBorderWith(int x, int y, const Owner &owner) const noexcept;
 };
 
 using BoardShPtr = std::shared_ptr<Board>;
