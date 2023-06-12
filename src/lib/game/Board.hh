@@ -67,6 +67,9 @@ class Board : public utils::CoreObject
 
   void changeColorOf(const Owner &owner, const Color &color) noexcept;
 
+  void save(const std::string &file) const noexcept;
+  void load(const std::string &file);
+
   private:
   int m_width;
   int m_height;

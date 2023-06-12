@@ -69,8 +69,9 @@ class Game : public utils::CoreObject
   void resume();
 
   const Board &board() const noexcept;
-
   void setPlayerColor(const Color &color);
+  void save(const std::string &file) const noexcept;
+  void load(const std::string &file);
 
   private:
   /// @brief - Used to enable or disable the menus that compose the game. This allows

@@ -39,7 +39,7 @@ int main(int /*argc*/, char ** /*argv*/)
     }
 
     pge::AppDesc ad = pge::newDesc(olc::vi2d(800, 800), frame, "square-color");
-    ad.fixedFrame   = false;
+    ad.fixedFrame   = true;
     pge::App demo(ad);
 
     demo.Start();

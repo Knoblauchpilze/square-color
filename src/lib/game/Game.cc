@@ -140,6 +140,16 @@ void Game::setPlayerColor(const Color &color)
   info("player now has color " + colorName(m_state.playerColor));
 }
 
+void Game::save(const std::string &file) const noexcept
+{
+  m_board->save(file);
+}
+
+void Game::load(const std::string &file)
+{
+  m_board->load(file);
+}
+
 void Game::enable(bool enable)
 {
   m_state.disabled = !enable;

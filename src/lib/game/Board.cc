@@ -102,6 +102,16 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
   }
 }
 
+void Board::save(const std::string &file) const noexcept
+{
+  warn("should save " + file);
+}
+
+void Board::load(const std::string &file)
+{
+  warn("should load " + file);
+}
+
 void Board::initialize()
 {
   m_cells.resize(m_width * m_height);

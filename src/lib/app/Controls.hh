@@ -19,6 +19,7 @@ enum Keys
   Space,
 
   P,
+  S,
 
   KeysCount
 };

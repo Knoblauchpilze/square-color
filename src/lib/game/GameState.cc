@@ -53,7 +53,7 @@ pge::MenuShPtr generateScreenOption(const olc::vi2d &dims,
 
 namespace pge {
 
-GameState::GameState(const olc::vi2d &dims, const Screen &screen)
+GameState::GameState(const olc::vi2d &dims, const Screen &screen, Game &game)
   : utils::CoreObject("state")
   ,
 
@@ -67,6 +67,7 @@ GameState::GameState(const olc::vi2d &dims, const Screen &screen)
   , m_loadGame(nullptr)
   , m_savedGames(10u, "data/saves", "ext")
   , m_gameOver(nullptr)
+  , m_game(game)
 {
   setService("chess");
 
@@ -136,9 +137,14 @@ menu::InputHandle GameState::processUserInput(const controls::State &c,
   return res;
 }
 
+void GameState::save() const noexcept
+{
+  m_game.save(m_savedGames.generateNewName());
+}
+
 void GameState::onSavedGamePicked(const std::string &game)
 {
-  info("Picked saved game \"" + game + "\"");
+  m_game.load(game);
   setScreen(Screen::Game);
 }
 

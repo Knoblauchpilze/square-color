@@ -65,6 +65,14 @@ void App::onInputs(const controls::State &c, const CoordinateFrame &cf)
 
     m_game->performAction(tp.x + it.x, tp.y + it.y);
   }
+
+  if (c.keys[controls::keys::S])
+  {
+    if (m_state->getScreen() == Screen::Game)
+    {
+      m_state->save();
+    }
+  }
 }
 
 void App::loadData()
@@ -88,7 +96,9 @@ void App::loadResources()
 void App::loadMenuResources()
 {
   // Generate the game state.
-  m_state = std::make_shared<GameState>(olc::vi2d(ScreenWidth(), ScreenHeight()), Screen::Home);
+  m_state = std::make_shared<GameState>(olc::vi2d(ScreenWidth(), ScreenHeight()),
+                                        Screen::Home,
+                                        *m_game);
 
   m_menus = m_game->generateMenus(ScreenWidth(), ScreenHeight());
 }
