@@ -106,8 +106,8 @@ Game::Game()
 {
   setService("game");
 
-  m_state.playerColor = m_board->playerColor();
-  m_state.aiColor     = m_board->aiColor();
+  m_state.playerColor = m_board->colorOf(Owner::Player);
+  m_state.aiColor     = m_board->colorOf(Owner::AI);
 }
 
 Game::~Game() {}
@@ -199,17 +199,18 @@ void Game::setPlayerColor(const Color &color)
   m_menus.colors[m_state.aiColor]->setEnabled(true);
 
   m_board->changeColorOf(Owner::Player, color);
-  const auto aiColor = determineAiBestMove();
+  const auto aiColor = m_board->bestColorFor(Owner::AI);
   m_board->changeColorOf(Owner::AI, aiColor);
 
   m_menus.colors[color]->setEnabled(false);
   if (m_board->isPlayerAndAiInContact())
   {
-    m_menus.colors[m_board->aiColor()]->setEnabled(false);
+    m_menus.colors[m_board->colorOf(Owner::AI)]->setEnabled(false);
   }
 
   m_state.playerColor = color;
   info("player now has color " + colorName(m_state.playerColor));
+  info("ai choses " + colorName(aiColor));
 }
 
 void Game::save(const std::string &file) const noexcept
@@ -226,8 +227,8 @@ void Game::reset()
 {
   log("Reset board");
   m_board             = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
-  m_state.playerColor = m_board->playerColor();
-  m_state.aiColor     = m_board->aiColor();
+  m_state.playerColor = m_board->colorOf(Owner::Player);
+  m_state.aiColor     = m_board->colorOf(Owner::AI);
 
   for (auto &[color, menu] : m_menus.colors)
   {
@@ -364,11 +365,6 @@ auto Game::generateGameOver(int width, int height) -> std::vector<MenuShPtr>
   out.push_back(m_menus.draw.menu);
   out.push_back(m_menus.lost.menu);
   return out;
-}
-
-auto Game::determineAiBestMove() const noexcept -> Color
-{
-  return Color::White;
 }
 
 bool Game::TimedMenu::update(bool active) noexcept

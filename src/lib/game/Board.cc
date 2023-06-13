@@ -1,6 +1,7 @@
 
 #include "Board.hh"
 #include <fstream>
+#include <unordered_set>
 
 namespace pge {
 
@@ -40,14 +41,20 @@ Cell Board::at(int x, int y) const
   return m_cells[linear(x, y)];
 }
 
-Color Board::playerColor() const noexcept
+auto Board::colorOf(const Owner &owner) const noexcept -> Color
 {
-  return at(0, 0).color;
-}
+  switch (owner)
+  {
+    case Owner::Player:
+      return at(0, 0).color;
+    case Owner::AI:
+      return at(width() - 1, height() - 1).color;
+    default:
+      error("Can't determine color", "Invalid owner " + std::to_string(static_cast<int>(owner)));
+  }
 
-Color Board::aiColor() const noexcept
-{
-  return at(width() - 1, height() - 1).color;
+  // Not reachable.
+  return Color::Blue;
 }
 
 bool Board::isPlayerAndAiInContact() const noexcept
@@ -103,6 +110,77 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
   }
 
   updateStatus();
+}
+
+auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
+{
+  struct Gain
+  {
+    Color color;
+    int amount;
+  };
+  std::vector<Gain> gainPerColor(static_cast<int>(Color::Count));
+
+  std::unordered_set<std::string> usedGains;
+  const auto validCell = [this](const int x, const int y) {
+    return x >= 0 && y >= 0 && x < m_width && y < m_height;
+  };
+  const auto toKey = [](const int x, const int y) {
+    return std::to_string(x) + "x" + std::to_string(y);
+  };
+  const auto isGainForColor = [&usedGains, &toKey, this](const int x, const int y, const Color &c) {
+    if (usedGains.count(toKey(x, y)) > 0)
+    {
+      return false;
+    }
+
+    return m_cells[linear(x, y)].owner == Owner::Nobody && m_cells[linear(x, y)].color == c;
+  };
+
+  const auto accumulateGain =
+    [&validCell, &isGainForColor, &gainPerColor, &usedGains, &toKey, this](const int x,
+                                                                           const int y,
+                                                                           const int cId) {
+      if (validCell(x, y) && isGainForColor(x, y, static_cast<Color>(cId)))
+      {
+        ++gainPerColor[cId].amount;
+      }
+      usedGains.insert(toKey(x, y));
+    };
+
+  for (auto cId = 0u; cId < gainPerColor.size(); ++cId)
+  {
+    gainPerColor[cId].color  = static_cast<Color>(cId);
+    gainPerColor[cId].amount = 0;
+
+    for (auto y = 0; y < m_height; ++y)
+    {
+      for (auto x = 0; x < m_width; ++x)
+      {
+        const auto &cell = m_cells[linear(x, y)];
+
+        if (cell.owner != owner)
+        {
+          continue;
+        }
+
+        accumulateGain(x, y + 1, cId);
+        accumulateGain(x, y - 1, cId);
+        accumulateGain(x - 1, y, cId);
+        accumulateGain(x + 1, y, cId);
+      }
+    }
+
+    log("Gain for " + colorName(gainPerColor[cId].color) + " is "
+        + std::to_string(gainPerColor[cId].amount));
+    usedGains.clear();
+  }
+
+  std::sort(gainPerColor.begin(), gainPerColor.end(), [](const Gain &lhs, const Gain &rhs) {
+    return lhs.amount > rhs.amount;
+  });
+
+  return gainPerColor.front().color;
 }
 
 auto Board::status() const noexcept -> Status
@@ -245,7 +323,7 @@ bool Board::hasBorderWith(int x, int y, const Owner &owner) const noexcept
 
 void Board::updateStatus() noexcept
 {
-  m_status = Status::Lost;
+  // m_status = Status::Lost;
 }
 
 Color generateRandomColor() noexcept

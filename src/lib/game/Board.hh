@@ -57,15 +57,15 @@ class Board : public utils::CoreObject
 
   Cell at(int x, int y) const;
 
-  Color playerColor() const noexcept;
-
-  Color aiColor() const noexcept;
+  auto colorOf(const Owner &owner) const noexcept -> Color;
 
   bool isPlayerAndAiInContact() const noexcept;
 
   float occupiedBy(const Owner &owner) const noexcept;
 
   void changeColorOf(const Owner &owner, const Color &color) noexcept;
+
+  auto bestColorFor(const Owner &owner) const noexcept -> Color;
 
   auto status() const noexcept -> Status;
 

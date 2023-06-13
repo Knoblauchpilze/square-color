@@ -87,7 +87,6 @@ class Game : public utils::CoreObject
   auto generateTerritoryMenu(int width, int height) -> std::vector<MenuShPtr>;
   auto generateColorButtons(int width, int height) -> std::vector<MenuShPtr>;
   auto generateGameOver(int width, int height) -> std::vector<MenuShPtr>;
-  auto determineAiBestMove() const noexcept -> Color;
 
   private:
   /// @brief - Convenience structure allowing to group information
