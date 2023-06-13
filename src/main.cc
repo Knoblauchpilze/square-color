@@ -12,6 +12,10 @@
 #include <core_utils/PrefixedLogger.hh>
 #include <core_utils/StdLogger.hh>
 
+// TODO: Bug with color picking
+// TODO: Game over
+// TODO: AI could take our color?
+
 int main(int /*argc*/, char ** /*argv*/)
 {
   // Create the logger.
