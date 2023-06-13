@@ -1,5 +1,6 @@
 
 #include "Board.hh"
+#include <fstream>
 
 namespace pge {
 
@@ -104,12 +105,71 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
 
 void Board::save(const std::string &file) const noexcept
 {
-  warn("should save " + file);
+  std::ofstream out(file.c_str());
+  if (!out.good())
+  {
+    error("Failed to save board to \"" + file + "\"", "Failed to open file");
+  }
+
+  unsigned buf, size = sizeof(unsigned);
+  const char *raw = reinterpret_cast<const char *>(&buf);
+
+  buf = m_width;
+  out.write(raw, size);
+
+  buf = m_height;
+  out.write(raw, size);
+
+  for (const auto &c : m_cells)
+  {
+    buf = static_cast<unsigned>(c.owner);
+    out.write(raw, size);
+
+    buf = static_cast<unsigned>(c.color);
+    out.write(raw, size);
+  }
+
+  log("Saved content of board with dimensions " + std::to_string(m_width) + "x"
+        + std::to_string(m_height) + " to \"" + file + "\"",
+      utils::Level::Info);
 }
 
 void Board::load(const std::string &file)
 {
-  warn("should load " + file);
+  std::ifstream out(file.c_str());
+  if (!out.good())
+  {
+    error("Failed to load board to \"" + file + "\"", "Failed to open file");
+  }
+
+  out.read(reinterpret_cast<char *>(&m_width), sizeof(unsigned));
+  out.read(reinterpret_cast<char *>(&m_height), sizeof(unsigned));
+
+  if (m_width == 0u || m_height == 0u)
+  {
+    error("Failed to load board from file \"" + file + "\"",
+          "Invalid board of size " + std::to_string(m_width) + "x" + std::to_string(m_height));
+  }
+
+  m_cells.resize(m_width * m_height);
+
+  unsigned buf, size = sizeof(unsigned);
+  char *raw = reinterpret_cast<char *>(&buf);
+  for (unsigned id = 0u; id < m_cells.size(); ++id)
+  {
+    auto &c = m_cells[id];
+
+    out.read(raw, size);
+    c.owner = static_cast<Owner>(buf);
+
+    out.read(raw, size);
+    c.color = static_cast<Color>(buf);
+
+    c.status = Status::Border;
+  }
+
+  log("Loaded board with dimensions " + std::to_string(m_width) + "x" + std::to_string(m_height),
+      utils::Level::Info);
 }
 
 void Board::initialize()
