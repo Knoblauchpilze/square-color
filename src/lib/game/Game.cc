@@ -169,7 +169,7 @@ void Game::updateUI()
   const auto writeTerritory = [](float perc, const std::string &owner) {
     std::stringstream ss;
     ss.precision(2);
-    ss << perc;
+    ss << perc * 100.0f;
     return owner + ": " + ss.str() + "%";
   };
 
