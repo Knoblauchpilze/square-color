@@ -145,6 +145,7 @@ void GameState::save() const noexcept
 void GameState::onSavedGamePicked(const std::string &game)
 {
   m_game.load(game);
+  m_game.togglePause();
   setScreen(Screen::Game);
 }
 
