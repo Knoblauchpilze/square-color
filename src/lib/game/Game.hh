@@ -72,6 +72,7 @@ class Game : public utils::CoreObject
   void setPlayerColor(const Color &color);
   void save(const std::string &file) const noexcept;
   void load(const std::string &file);
+  void reset();
 
   private:
   /// @brief - Used to enable or disable the menus that compose the game. This allows
@@ -85,6 +86,7 @@ class Game : public utils::CoreObject
 
   auto generateTerritoryMenu(int width, int height) -> std::vector<MenuShPtr>;
   auto generateColorButtons(int width, int height) -> std::vector<MenuShPtr>;
+  auto generateGameOver(int width, int height) -> std::vector<MenuShPtr>;
   auto determineAiBestMove() const noexcept -> Color;
 
   private:
@@ -144,8 +146,10 @@ class Game : public utils::CoreObject
   {
     MenuShPtr playerTerritory;
     MenuShPtr aiTerritory;
-
     std::unordered_map<Color, MenuShPtr> colors;
+    TimedMenu win;
+    TimedMenu draw;
+    TimedMenu lost;
   };
 
   /// @brief - The definition of the game state.

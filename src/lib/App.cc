@@ -21,7 +21,7 @@ bool App::onFrame(float fElapsed)
 
   if (!m_game->step(fElapsed))
   {
-    info("This is game over");
+    m_state->setScreen(pge::Screen::GameOver);
   }
 
   return m_game->terminated();

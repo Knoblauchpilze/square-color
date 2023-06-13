@@ -101,6 +101,13 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
       }
     }
   }
+
+  updateStatus();
+}
+
+auto Board::status() const noexcept -> Status
+{
+  return m_status;
 }
 
 void Board::save(const std::string &file) const noexcept
@@ -164,9 +171,9 @@ void Board::load(const std::string &file)
 
     out.read(raw, size);
     c.color = static_cast<Color>(buf);
-
-    c.status = Status::Border;
   }
+
+  updateStatus();
 
   log("Loaded board with dimensions " + std::to_string(m_width) + "x" + std::to_string(m_height),
       utils::Level::Info);
@@ -234,6 +241,11 @@ bool Board::hasBorderWith(int x, int y, const Owner &owner) const noexcept
   }
 
   return false;
+}
+
+void Board::updateStatus() noexcept
+{
+  m_status = Status::Lost;
 }
 
 Color generateRandomColor() noexcept

@@ -206,11 +206,18 @@ void GameState::generateGameOverScreen(const olc::vi2d &dims)
                                      olc::VERY_DARK_MAGENTA,
                                      "back_to_main",
                                      true);
-  m->setSimpleAction([this](Game & /*g*/) { setScreen(Screen::Home); });
+  m->setSimpleAction([this](Game &g) {
+    g.reset();
+    setScreen(Screen::Home);
+  });
   m_gameOver->addMenu(m);
 
   m = generateScreenOption(dims, "Restart", olc::VERY_DARK_MAGENTA, "restart", true);
-  m->setSimpleAction([this](Game & /*g*/) { setScreen(Screen::Game); });
+  m->setSimpleAction([this](Game &g) {
+    g.reset();
+    g.togglePause();
+    setScreen(Screen::Game);
+  });
   m_gameOver->addMenu(m);
 
   m = generateScreenOption(dims, "Quit", olc::VERY_DARK_MAGENTA, "quit", true);

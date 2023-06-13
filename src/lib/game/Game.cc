@@ -4,16 +4,18 @@
 #include <cxxabi.h>
 
 namespace pge {
-static constexpr auto DEFAULT_BOARD_DIMS  = 32;
-static constexpr auto DEFAULT_MENU_HEIGHT = 50;
+constexpr auto DEFAULT_BOARD_DIMS  = 32;
+constexpr auto DEFAULT_MENU_HEIGHT = 50;
+
+constexpr auto DEFAULT_GAME_FINISHED_ALERT_DURATION_IN_MS = 3000;
 
 namespace {
-pge::MenuShPtr generateMenu(const olc::vi2d &pos,
-                            const olc::vi2d &size,
-                            const std::string &text,
-                            const std::string &name,
-                            bool clickable     = false,
-                            olc::Pixel bgColor = olc::VERY_DARK_GREEN)
+auto generateMenu(const olc::vi2d &pos,
+                  const olc::vi2d &size,
+                  const std::string &text,
+                  const std::string &name,
+                  bool clickable     = false,
+                  olc::Pixel bgColor = olc::VERY_DARK_GREEN) -> pge::MenuShPtr
 {
   pge::menu::MenuContentDesc fd = pge::menu::newMenuContent(text, "", size);
 
@@ -30,6 +32,62 @@ pge::MenuShPtr generateMenu(const olc::vi2d &pos,
                                      fd,
                                      pge::menu::Layout::Horizontal,
                                      clickable,
+                                     false);
+}
+
+enum class MessageBoxKind
+{
+  Info,
+  Warning,
+  Alert
+};
+
+auto textColorFromMessageBoxKind(const MessageBoxKind kind) -> olc::Pixel
+{
+  switch (kind)
+  {
+    case MessageBoxKind::Info:
+    default:
+      return olc::VERY_DARK_GREEN;
+    case MessageBoxKind::Warning:
+      return olc::VERY_DARK_YELLOW;
+    case MessageBoxKind::Alert:
+      return olc::VERY_DARK_RED;
+  }
+}
+
+auto backgroundColorFromMessageBoxKind(const MessageBoxKind kind) -> olc::Pixel
+{
+  switch (kind)
+  {
+    case MessageBoxKind::Info:
+    default:
+      return olc::GREEN;
+    case MessageBoxKind::Warning:
+      return olc::YELLOW;
+    case MessageBoxKind::Alert:
+      return olc::RED;
+  }
+}
+
+auto generateMessageBoxMenu(const olc::vi2d &pos,
+                            const olc::vi2d &size,
+                            const std::string &text,
+                            const std::string &name,
+                            MessageBoxKind kind) -> pge::MenuShPtr
+{
+  pge::menu::MenuContentDesc fd = pge::menu::newMenuContent(text, "", size);
+  fd.color                      = backgroundColorFromMessageBoxKind(kind);
+  fd.align                      = pge::menu::Alignment::Center;
+
+  return std::make_shared<pge::Menu>(pos,
+                                     size,
+                                     name,
+                                     pge::menu::newColoredBackground(
+                                       textColorFromMessageBoxKind(kind)),
+                                     fd,
+                                     pge::menu::Layout::Horizontal,
+                                     false,
                                      false);
 }
 } // namespace
@@ -70,6 +128,12 @@ std::vector<MenuShPtr> Game::generateMenus(float width, float height)
     out.push_back(menu);
   }
 
+  menus = generateGameOver(width, height);
+  for (auto &menu : menus)
+  {
+    out.push_back(menu);
+  }
+
   return out;
 }
 
@@ -93,7 +157,15 @@ bool Game::step(float /*tDelta*/)
 
   updateUI();
 
-  return true;
+  auto done = (m_board->status() != Status::Running && !m_menus.win.menu->visible()
+               && !m_menus.draw.menu->visible() && !m_menus.lost.menu->visible());
+  if (done)
+  {
+    pause();
+    enable(!m_state.paused);
+  }
+
+  return !done;
 }
 
 void Game::togglePause()
@@ -150,6 +222,19 @@ void Game::load(const std::string &file)
   m_board->load(file);
 }
 
+void Game::reset()
+{
+  log("Reset board");
+  m_board             = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
+  m_state.playerColor = m_board->playerColor();
+  m_state.aiColor     = m_board->aiColor();
+
+  for (auto &[color, menu] : m_menus.colors)
+  {
+    menu->setEnabled(color != m_state.playerColor);
+  }
+}
+
 void Game::enable(bool enable)
 {
   m_state.disabled = !enable;
@@ -178,6 +263,10 @@ void Game::updateUI()
 
   str = writeTerritory(m_board->occupiedBy(Owner::AI), "ai");
   m_menus.aiTerritory->setText(str);
+
+  m_menus.win.update(m_board->status() == Status::Win);
+  m_menus.draw.update(m_board->status() == Status::Draw);
+  m_menus.lost.update(m_board->status() == Status::Lost);
 }
 
 auto Game::generateTerritoryMenu(int width, int /*height*/) -> std::vector<MenuShPtr>
@@ -232,6 +321,48 @@ auto Game::generateColorButtons(int width, int height) -> std::vector<MenuShPtr>
   }
 
   out.push_back(colors);
+  return out;
+}
+
+auto Game::generateGameOver(int width, int height) -> std::vector<MenuShPtr>
+{
+  m_menus.win.date      = utils::TimeStamp();
+  m_menus.win.wasActive = false;
+  m_menus.win.duration  = DEFAULT_GAME_FINISHED_ALERT_DURATION_IN_MS;
+  m_menus.win.menu      = generateMessageBoxMenu(olc::vi2d((width - 300.0f) / 2.0f,
+                                                      (height - 150.0f) / 2.0f),
+                                            olc::vi2d(300, 150),
+                                            "You won !",
+                                            "win",
+                                            MessageBoxKind::Info);
+  m_menus.win.menu->setVisible(false);
+
+  m_menus.draw.date      = utils::TimeStamp();
+  m_menus.draw.wasActive = false;
+  m_menus.draw.duration  = DEFAULT_GAME_FINISHED_ALERT_DURATION_IN_MS;
+  m_menus.draw.menu      = generateMessageBoxMenu(olc::vi2d((width - 300.0f) / 2.0f,
+                                                       (height - 150.0f) / 2.0f),
+                                             olc::vi2d(300, 150),
+                                             "It's a draw !",
+                                             "draw",
+                                             MessageBoxKind::Warning);
+  m_menus.draw.menu->setVisible(false);
+
+  m_menus.lost.date      = utils::TimeStamp();
+  m_menus.lost.wasActive = false;
+  m_menus.lost.duration  = DEFAULT_GAME_FINISHED_ALERT_DURATION_IN_MS;
+  m_menus.lost.menu      = generateMessageBoxMenu(olc::vi2d((width - 300.0f) / 2.0f,
+                                                       (height - 150.0f) / 2.0f),
+                                             olc::vi2d(300, 150),
+                                             "You lost !",
+                                             "lost",
+                                             MessageBoxKind::Alert);
+  m_menus.lost.menu->setVisible(false);
+
+  std::vector<MenuShPtr> out;
+  out.push_back(m_menus.win.menu);
+  out.push_back(m_menus.draw.menu);
+  out.push_back(m_menus.lost.menu);
   return out;
 }
 

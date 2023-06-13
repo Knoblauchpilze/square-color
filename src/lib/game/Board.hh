@@ -15,14 +15,6 @@ enum class Owner
   Player
 };
 
-/// @brief - The state of the cell.
-enum class Status
-{
-  Border,
-  Enclave,
-  Isolated
-};
-
 /// @brief - The available colors for a cell.
 enum class Color
 {
@@ -41,8 +33,16 @@ enum class Color
 struct Cell
 {
   Owner owner{Owner::Nobody};
-  Status status{Status::Border};
   Color color{Color::Black};
+};
+
+/// @brief - The state of the board.
+enum class Status
+{
+  Running,
+  Win,
+  Draw,
+  Lost
 };
 
 /// @brief - The board, regrouping a certain amount of cells.
@@ -67,6 +67,8 @@ class Board : public utils::CoreObject
 
   void changeColorOf(const Owner &owner, const Color &color) noexcept;
 
+  auto status() const noexcept -> Status;
+
   void save(const std::string &file) const noexcept;
   void load(const std::string &file);
 
@@ -76,9 +78,12 @@ class Board : public utils::CoreObject
 
   std::vector<Cell> m_cells{};
 
+  Status m_status{Status::Running};
+
   void initialize();
   int linear(int x, int y) const noexcept;
   bool hasBorderWith(int x, int y, const Owner &owner) const noexcept;
+  void updateStatus() noexcept;
 };
 
 using BoardShPtr = std::shared_ptr<Board>;
