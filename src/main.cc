@@ -12,8 +12,6 @@
 #include <core_utils/PrefixedLogger.hh>
 #include <core_utils/StdLogger.hh>
 
-// TODO: Change not always working?
-
 int main(int /*argc*/, char ** /*argv*/)
 {
   // Create the logger.

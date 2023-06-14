@@ -124,6 +124,7 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
   const auto areInContact = isPlayerAndAiInContact();
 
   std::unordered_set<std::string> usedGains;
+  bool zeroGain = true;
   const auto validCell = [this](const int x, const int y) {
     return x >= 0 && y >= 0 && x < m_width && y < m_height;
   };
@@ -181,11 +182,30 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
     log("Gain for " + colorName(gainPerColor[cId].color) + " is "
         + std::to_string(gainPerColor[cId].amount));
     usedGains.clear();
+    zeroGain &= (gainPerColor[cId].amount == 0);
   }
 
   std::sort(gainPerColor.begin(), gainPerColor.end(), [](const Gain &lhs, const Gain &rhs) {
     return lhs.amount > rhs.amount;
   });
+
+  if (zeroGain) {
+    // Random color.
+    Color pick = otherColor;
+    constexpr auto TRIES_FOR_RANDOM_COLOR = static_cast<int>(Color::Count);
+    auto tries = 0;
+    while (pick == otherColor && tries < TRIES_FOR_RANDOM_COLOR) {
+      pick = static_cast<Color>(std::rand() % static_cast<int>(Color::Count));
+      ++tries;
+    }
+
+    if (pick == otherColor) {
+      warn("Failed to pick a random color, continuing with first one");
+    }
+    else {
+      return pick;
+    }
+  }
 
   return gainPerColor.front().color;
 }
