@@ -221,19 +221,14 @@ void Game::save(const std::string &file) const noexcept
 void Game::load(const std::string &file)
 {
   m_board->load(file);
+  updateUIAfterBoardChange();
 }
 
 void Game::reset()
 {
   log("Reset board");
   m_board             = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
-  m_state.playerColor = m_board->colorOf(Owner::Player);
-  m_state.aiColor     = m_board->colorOf(Owner::AI);
-
-  for (auto &[color, menu] : m_menus.colors)
-  {
-    menu->setEnabled(color != m_state.playerColor);
-  }
+  updateUIAfterBoardChange();
 }
 
 void Game::enable(bool enable)
@@ -268,6 +263,16 @@ void Game::updateUI()
   m_menus.win.update(m_board->status() == Status::Win);
   m_menus.draw.update(m_board->status() == Status::Draw);
   m_menus.lost.update(m_board->status() == Status::Lost);
+
+  for (auto& [color, menu] : m_menus.colors)
+  {
+    if (menu->enabled()) {
+      menu->setText(colorName(color) + " (e)");
+    }
+    else  {
+      menu->setText(colorName(color) + " (d)");
+    }
+  }
 }
 
 auto Game::generateTerritoryMenu(int width, int /*height*/) -> std::vector<MenuShPtr>
@@ -365,6 +370,21 @@ auto Game::generateGameOver(int width, int height) -> std::vector<MenuShPtr>
   out.push_back(m_menus.draw.menu);
   out.push_back(m_menus.lost.menu);
   return out;
+}
+
+void Game::updateUIAfterBoardChange() noexcept
+{
+  m_state.playerColor = m_board->colorOf(Owner::Player);
+  m_state.aiColor     = m_board->colorOf(Owner::AI);
+
+  for (auto &[color, menu] : m_menus.colors)
+  {
+    menu->setEnabled(color != m_state.playerColor);
+  }
+
+  if (m_board->isPlayerAndAiInContact()) {
+    m_menus.colors[m_board->colorOf(Owner::AI)]->setEnabled(false);
+  }
 }
 
 bool Game::TimedMenu::update(bool active) noexcept
