@@ -349,17 +349,17 @@ auto olcColorFromCellColor(const Color &c) -> olc::Pixel
   switch (c)
   {
     case Color::Red:
-      return olc::DARK_RED;
+      return olc::RED;
     case Color::Green:
-      return olc::DARK_GREEN;
+      return olc::GREEN;
     case Color::Blue:
-      return olc::DARK_BLUE;
+      return olc::BLUE;
     case Color::Yellow:
-      return olc::DARK_YELLOW;
+      return olc::YELLOW;
     case Color::Cyan:
-      return olc::DARK_CYAN;
+      return olc::CYAN;
     case Color::Magenta:
-      return olc::DARK_MAGENTA;
+      return olc::MAGENTA;
     case Color::Black:
       return olc::BLACK;
     case Color::White:

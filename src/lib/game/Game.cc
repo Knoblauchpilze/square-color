@@ -19,9 +19,8 @@ auto generateMenu(const olc::vi2d &pos,
 {
   pge::menu::MenuContentDesc fd = pge::menu::newMenuContent(text, "", size);
 
-  olc::Pixel hsl = pge::RGBToHSL(bgColor);
-  fd.color       = hsl.b > 127 ? olc::BLACK : olc::WHITE;
-  fd.hColor      = hsl.b > 127 ? olc::WHITE : olc::BLACK;
+  fd.color       = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
+  fd.hColor      = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
 
   fd.align = pge::menu::Alignment::Center;
 
@@ -209,7 +208,8 @@ void Game::setPlayerColor(const Color &color)
   }
 
   m_state.playerColor = color;
-  info("player now has color " + colorName(m_state.playerColor));
+  m_state.aiColor = aiColor;
+  info("player now has color " + colorName(color));
   info("ai choses " + colorName(aiColor));
 }
 
@@ -263,16 +263,6 @@ void Game::updateUI()
   m_menus.win.update(m_board->status() == Status::Win);
   m_menus.draw.update(m_board->status() == Status::Draw);
   m_menus.lost.update(m_board->status() == Status::Lost);
-
-  for (auto& [color, menu] : m_menus.colors)
-  {
-    if (menu->enabled()) {
-      menu->setText(colorName(color) + " (e)");
-    }
-    else  {
-      menu->setText(colorName(color) + " (d)");
-    }
-  }
 }
 
 auto Game::generateTerritoryMenu(int width, int /*height*/) -> std::vector<MenuShPtr>
@@ -281,12 +271,14 @@ auto Game::generateTerritoryMenu(int width, int /*height*/) -> std::vector<MenuS
                                          olc::vi2d{width, DEFAULT_MENU_HEIGHT},
                                          "player: 0%",
                                          "player_territory",
-                                         false);
+                                         false,
+                                         olc::GREEN);
   m_menus.aiTerritory     = generateMenu(olc::vi2d{},
                                      olc::vi2d{width, DEFAULT_MENU_HEIGHT},
                                      "ai: 0%",
                                      "ai_territory",
-                                     false);
+                                     false,
+                                     olc::DARK_GREEN);
 
   auto top = generateMenu(olc::vi2d{},
                           olc::vi2d{width, DEFAULT_MENU_HEIGHT},
