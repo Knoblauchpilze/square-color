@@ -97,6 +97,7 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
     }
   });
 
+  auto gained = 0;
   for (auto y = 0; y < height(); ++y)
   {
     for (auto x = 0; x < width(); ++x)
@@ -105,10 +106,12 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
       if (c.owner != owner && c.color == color && hasBorderWith(x, y, owner))
       {
         c.owner = owner;
+        ++gained;
       }
     }
   }
 
+  log(ownerName(owner) + " gained " + std::to_string(gained) + " cell(s)");
   updateStatus();
 }
 
@@ -120,6 +123,8 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
     int amount;
   };
   std::vector<Gain> gainPerColor(static_cast<int>(Color::Count));
+  const auto otherColor = colorOf(owner == Owner::AI ? Owner::Player : Owner::AI);
+  const auto areInContact = isPlayerAndAiInContact();
 
   std::unordered_set<std::string> usedGains;
   const auto validCell = [this](const int x, const int y) {
@@ -152,6 +157,11 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
   {
     gainPerColor[cId].color  = static_cast<Color>(cId);
     gainPerColor[cId].amount = 0;
+
+    if (gainPerColor[cId].color == otherColor && areInContact) {
+      log("Ignoring " + colorName(gainPerColor[cId].color) + ", opponent has this color");
+      continue;
+    }
 
     for (auto y = 0; y < m_height; ++y)
     {
@@ -339,17 +349,17 @@ auto olcColorFromCellColor(const Color &c) -> olc::Pixel
   switch (c)
   {
     case Color::Red:
-      return olc::RED;
+      return olc::DARK_RED;
     case Color::Green:
-      return olc::GREEN;
+      return olc::DARK_GREEN;
     case Color::Blue:
-      return olc::BLUE;
+      return olc::DARK_BLUE;
     case Color::Yellow:
-      return olc::YELLOW;
+      return olc::DARK_YELLOW;
     case Color::Cyan:
-      return olc::CYAN;
+      return olc::DARK_CYAN;
     case Color::Magenta:
-      return olc::MAGENTA;
+      return olc::DARK_MAGENTA;
     case Color::Black:
       return olc::BLACK;
     case Color::White:
@@ -379,6 +389,21 @@ auto colorName(const Color &c) -> std::string
       return "black";
     case Color::White:
       return "white";
+    default:
+      return "unknown";
+  }
+}
+
+auto ownerName(const Owner& o) -> std::string
+{
+  switch (o)
+  {
+    case Owner::Nobody:
+      return "nobody";
+    case Owner::AI:
+      return "ai";
+    case Owner::Player:
+      return "player";
     default:
       return "unknown";
   }
