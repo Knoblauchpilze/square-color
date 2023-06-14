@@ -100,7 +100,7 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
     for (auto x = 0; x < width(); ++x)
     {
       auto &c = m_cells[linear(x, y)];
-      if (c.owner != owner && c.color == color && hasBorderWith(x, y, owner))
+      if (c.owner == Owner::Nobody && c.color == color && hasBorderWith(x, y, owner))
       {
         c.owner = owner;
         ++gained;
