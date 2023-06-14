@@ -2,6 +2,7 @@
 #include "Board.hh"
 #include <fstream>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace pge {
 
@@ -81,11 +82,7 @@ bool Board::isPlayerAndAiInContact() const noexcept
 
 float Board::occupiedBy(const Owner &owner) const noexcept
 {
-  return 1.0f
-         * std::count_if(m_cells.begin(),
-                         m_cells.end(),
-                         [&owner](const Cell &c) { return c.owner == owner; })
-         / m_cells.size();
+  return 1.0f * countFor(owner) / m_cells.size();
 }
 
 void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
@@ -331,9 +328,73 @@ bool Board::hasBorderWith(int x, int y, const Owner &owner) const noexcept
   return false;
 }
 
+auto Board::countFor(const Owner &owner) const noexcept -> int
+{
+  return static_cast<int>(
+    std::count_if(m_cells.begin(),
+                         m_cells.end(),
+                         [&owner](const Cell &c) { return c.owner == owner; }));
+}
+
 void Board::updateStatus() noexcept
 {
-  // m_status = Status::Lost;
+  std::unordered_map<Owner, int> cellsToGain;
+
+  const auto validCell = [this](const int x, const int y) {
+    return x >= 0 && y >= 0 && x < m_width && y < m_height;
+  };
+
+  bool someCellsToGain = false;
+  auto y = 0;
+  while (y < m_height && !someCellsToGain) {
+    auto x = 0;
+
+    while (x < m_width && !someCellsToGain) {
+      const auto& c = m_cells[linear(x, y)];
+      if (c.owner == Owner::Nobody) {
+        if (validCell(x + 1, y)) {
+          const auto& right = m_cells[linear(x + 1, y)];
+          someCellsToGain |= (right.owner != Owner::Nobody);
+        }
+        if (validCell(x - 1, y)) {
+          const auto& left = m_cells[linear(x - 1, y)];
+          someCellsToGain |= (left.owner != Owner::Nobody);
+        }
+        if (validCell(x, y + 1)) {
+          const auto& top = m_cells[linear(x, y + 1)];
+          someCellsToGain |= (top.owner != Owner::Nobody);
+        }
+        if (validCell(x, y - 1)) {
+          const auto& bottom = m_cells[linear(x, y - 1)];
+          someCellsToGain |= (bottom.owner != Owner::Nobody);
+        }
+      }
+
+      ++x;
+    }
+
+    ++y;
+  }
+
+  auto player = countFor(Owner::Player);
+  auto ai = countFor(Owner::AI);
+
+  if (!someCellsToGain) {
+    info("player: " + std::to_string(player) + " - ai: " + std::to_string(ai));
+  }
+
+  if (someCellsToGain) {
+    m_status = Status::Running;
+  }
+  else if (player == ai) {
+    m_status = Status::Draw;
+  }
+  else if (player > ai) {
+    m_status = Status::Win;
+  }
+  else {
+    m_status = Status::Lost;
+  }
 }
 
 Color generateRandomColor() noexcept

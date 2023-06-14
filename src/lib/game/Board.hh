@@ -83,6 +83,7 @@ class Board : public utils::CoreObject
   void initialize();
   int linear(int x, int y) const noexcept;
   bool hasBorderWith(int x, int y, const Owner &owner) const noexcept;
+  auto countFor(const Owner &owner) const noexcept -> int;
   void updateStatus() noexcept;
 };
 

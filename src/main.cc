@@ -12,9 +12,7 @@
 #include <core_utils/PrefixedLogger.hh>
 #include <core_utils/StdLogger.hh>
 
-// TODO: Bug with color picking
-// TODO: Game over
-// TODO: AI could take our color?
+// TODO: Change not always working?
 
 int main(int /*argc*/, char ** /*argv*/)
 {
