@@ -19,8 +19,8 @@ auto generateMenu(const olc::vi2d &pos,
 {
   pge::menu::MenuContentDesc fd = pge::menu::newMenuContent(text, "", size);
 
-  fd.color       = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
-  fd.hColor      = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
+  fd.color  = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
+  fd.hColor = bgColor == olc::BLACK ? olc::WHITE : olc::BLACK;
 
   fd.align = pge::menu::Alignment::Center;
 
@@ -208,7 +208,7 @@ void Game::setPlayerColor(const Color &color)
   }
 
   m_state.playerColor = color;
-  m_state.aiColor = aiColor;
+  m_state.aiColor     = aiColor;
   info("player now has color " + colorName(color));
   info("ai choses " + colorName(aiColor));
 }
@@ -227,7 +227,7 @@ void Game::load(const std::string &file)
 void Game::reset()
 {
   log("Reset board");
-  m_board             = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
+  m_board = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
   updateUIAfterBoardChange();
 }
 
@@ -374,7 +374,8 @@ void Game::updateUIAfterBoardChange() noexcept
     menu->setEnabled(color != m_state.playerColor);
   }
 
-  if (m_board->isPlayerAndAiInContact()) {
+  if (m_board->isPlayerAndAiInContact())
+  {
     m_menus.colors[m_board->colorOf(Owner::AI)]->setEnabled(false);
   }
 }

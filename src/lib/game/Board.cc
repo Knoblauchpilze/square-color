@@ -1,8 +1,8 @@
 
 #include "Board.hh"
 #include <fstream>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace pge {
 
@@ -120,11 +120,11 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
     int amount;
   };
   std::vector<Gain> gainPerColor(static_cast<int>(Color::Count));
-  const auto otherColor = colorOf(owner == Owner::AI ? Owner::Player : Owner::AI);
+  const auto otherColor   = colorOf(owner == Owner::AI ? Owner::Player : Owner::AI);
   const auto areInContact = isPlayerAndAiInContact();
 
   std::unordered_set<std::string> usedGains;
-  bool zeroGain = true;
+  bool zeroGain        = true;
   const auto validCell = [this](const int x, const int y) {
     return x >= 0 && y >= 0 && x < m_width && y < m_height;
   };
@@ -156,7 +156,8 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
     gainPerColor[cId].color  = static_cast<Color>(cId);
     gainPerColor[cId].amount = 0;
 
-    if (gainPerColor[cId].color == otherColor && areInContact) {
+    if (gainPerColor[cId].color == otherColor && areInContact)
+    {
       log("Ignoring " + colorName(gainPerColor[cId].color) + ", opponent has this color");
       continue;
     }
@@ -189,20 +190,24 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
     return lhs.amount > rhs.amount;
   });
 
-  if (zeroGain) {
+  if (zeroGain)
+  {
     // Random color.
-    Color pick = otherColor;
+    Color pick                            = otherColor;
     constexpr auto TRIES_FOR_RANDOM_COLOR = static_cast<int>(Color::Count);
-    auto tries = 0;
-    while (pick == otherColor && tries < TRIES_FOR_RANDOM_COLOR) {
+    auto tries                            = 0;
+    while (pick == otherColor && tries < TRIES_FOR_RANDOM_COLOR)
+    {
       pick = static_cast<Color>(std::rand() % static_cast<int>(Color::Count));
       ++tries;
     }
 
-    if (pick == otherColor) {
+    if (pick == otherColor)
+    {
       warn("Failed to pick a random color, continuing with first one");
     }
-    else {
+    else
+    {
       return pick;
     }
   }
@@ -350,10 +355,9 @@ bool Board::hasBorderWith(int x, int y, const Owner &owner) const noexcept
 
 auto Board::countFor(const Owner &owner) const noexcept -> int
 {
-  return static_cast<int>(
-    std::count_if(m_cells.begin(),
-                         m_cells.end(),
-                         [&owner](const Cell &c) { return c.owner == owner; }));
+  return static_cast<int>(std::count_if(m_cells.begin(), m_cells.end(), [&owner](const Cell &c) {
+    return c.owner == owner;
+  }));
 }
 
 void Board::updateStatus() noexcept
@@ -365,27 +369,34 @@ void Board::updateStatus() noexcept
   };
 
   bool someCellsToGain = false;
-  auto y = 0;
-  while (y < m_height && !someCellsToGain) {
+  auto y               = 0;
+  while (y < m_height && !someCellsToGain)
+  {
     auto x = 0;
 
-    while (x < m_width && !someCellsToGain) {
-      const auto& c = m_cells[linear(x, y)];
-      if (c.owner == Owner::Nobody) {
-        if (validCell(x + 1, y)) {
-          const auto& right = m_cells[linear(x + 1, y)];
+    while (x < m_width && !someCellsToGain)
+    {
+      const auto &c = m_cells[linear(x, y)];
+      if (c.owner == Owner::Nobody)
+      {
+        if (validCell(x + 1, y))
+        {
+          const auto &right = m_cells[linear(x + 1, y)];
           someCellsToGain |= (right.owner != Owner::Nobody);
         }
-        if (validCell(x - 1, y)) {
-          const auto& left = m_cells[linear(x - 1, y)];
+        if (validCell(x - 1, y))
+        {
+          const auto &left = m_cells[linear(x - 1, y)];
           someCellsToGain |= (left.owner != Owner::Nobody);
         }
-        if (validCell(x, y + 1)) {
-          const auto& top = m_cells[linear(x, y + 1)];
+        if (validCell(x, y + 1))
+        {
+          const auto &top = m_cells[linear(x, y + 1)];
           someCellsToGain |= (top.owner != Owner::Nobody);
         }
-        if (validCell(x, y - 1)) {
-          const auto& bottom = m_cells[linear(x, y - 1)];
+        if (validCell(x, y - 1))
+        {
+          const auto &bottom = m_cells[linear(x, y - 1)];
           someCellsToGain |= (bottom.owner != Owner::Nobody);
         }
       }
@@ -397,22 +408,27 @@ void Board::updateStatus() noexcept
   }
 
   auto player = countFor(Owner::Player);
-  auto ai = countFor(Owner::AI);
+  auto ai     = countFor(Owner::AI);
 
-  if (!someCellsToGain) {
+  if (!someCellsToGain)
+  {
     info("player: " + std::to_string(player) + " - ai: " + std::to_string(ai));
   }
 
-  if (someCellsToGain) {
+  if (someCellsToGain)
+  {
     m_status = Status::Running;
   }
-  else if (player == ai) {
+  else if (player == ai)
+  {
     m_status = Status::Draw;
   }
-  else if (player > ai) {
+  else if (player > ai)
+  {
     m_status = Status::Win;
   }
-  else {
+  else
+  {
     m_status = Status::Lost;
   }
 }
@@ -475,7 +491,7 @@ auto colorName(const Color &c) -> std::string
   }
 }
 
-auto ownerName(const Owner& o) -> std::string
+auto ownerName(const Owner &o) -> std::string
 {
   switch (o)
   {

@@ -83,5 +83,3 @@ The game ends when none of the cells are not controlled by either the player or 
 Here's what happens in case the user loses:
 
 ![lost](resources/lost.png)
-
-TODO: Clang some files!

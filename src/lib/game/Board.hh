@@ -92,5 +92,5 @@ using BoardShPtr = std::shared_ptr<Board>;
 Color generateRandomColor() noexcept;
 auto olcColorFromCellColor(const Color &c) -> olc::Pixel;
 auto colorName(const Color &c) -> std::string;
-auto ownerName(const Owner& o) -> std::string;
+auto ownerName(const Owner &o) -> std::string;
 } // namespace pge
