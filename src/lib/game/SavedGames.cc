@@ -141,7 +141,7 @@ void SavedGames::refresh()
   m_saves.clear();
   m_existingFiles.clear();
 
-  log("Scanning directory \"" + m_dir + "\" for saved games", utils::Level::Debug);
+  debug("Scanning directory \"" + m_dir + "\" for saved games");
 
   for (; it != end; ++it)
   {
@@ -172,7 +172,7 @@ void SavedGames::refresh()
 
     if (name.empty())
     {
-      log("Failed to interpret saved game \"" + path + "\"", utils::Level::Error);
+      warn("Failed to interpret saved game \"" + path + "\"");
       continue;
     }
 

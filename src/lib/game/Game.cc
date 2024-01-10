@@ -141,7 +141,7 @@ void Game::performAction(float /*x*/, float /*y*/)
   // Only handle actions when the game is not disabled.
   if (m_state.disabled)
   {
-    log("Ignoring action while menu is disabled");
+    debug("Ignoring action while menu is disabled");
     return;
   }
 }
@@ -226,7 +226,7 @@ void Game::load(const std::string &file)
 
 void Game::reset()
 {
-  log("Reset board");
+  debug("Reset board");
   m_board = std::make_shared<Board>(DEFAULT_BOARD_DIMS, DEFAULT_BOARD_DIMS);
   updateUIAfterBoardChange();
 }
@@ -237,11 +237,11 @@ void Game::enable(bool enable)
 
   if (m_state.disabled)
   {
-    log("Disabled game UI", utils::Level::Verbose);
+    verbose("Disabled game UI");
   }
   else
   {
-    log("Enabled game UI", utils::Level::Verbose);
+    verbose("Enabled game UI");
   }
 }
 

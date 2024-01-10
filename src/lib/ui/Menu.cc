@@ -162,8 +162,8 @@ void Menu::addMenu(MenuShPtr child)
   // child already has a parent.
   if (child->m_parent != nullptr)
   {
-    log("Reparenting menu \"" + child->getName() + "\" from \"" + child->m_parent->getName() + "\"",
-        utils::Level::Warning);
+    warn("Reparenting menu \"" + child->getName() + "\" from \"" + child->m_parent->getName()
+         + "\"");
   }
 
   child->m_parent = this;
@@ -370,10 +370,9 @@ void Menu::updateChildren()
 
   if (expandableSize < 0)
   {
-    log("Menu has " + std::to_string(m_children.size()) + " child(ren)" + " occpupying "
-          + std::to_string(i - expandableSize) + " but menu is only " + std::to_string(i)
-          + ", truncation will occur",
-        utils::Level::Warning);
+    warn("Menu has " + std::to_string(m_children.size()) + " child(ren)" + " occpupying "
+         + std::to_string(i - expandableSize) + " but menu is only " + std::to_string(i)
+         + ", truncation will occur");
 
     expandableSize = 0;
   }

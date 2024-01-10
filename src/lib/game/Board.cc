@@ -108,7 +108,7 @@ void Board::changeColorOf(const Owner &owner, const Color &color) noexcept
     }
   }
 
-  log(ownerName(owner) + " gained " + std::to_string(gained) + " cell(s)");
+  debug(ownerName(owner) + " gained " + std::to_string(gained) + " cell(s)");
   updateStatus();
 }
 
@@ -158,7 +158,7 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
 
     if (gainPerColor[cId].color == otherColor && areInContact)
     {
-      log("Ignoring " + colorName(gainPerColor[cId].color) + ", opponent has this color");
+      debug("Ignoring " + colorName(gainPerColor[cId].color) + ", opponent has this color");
       continue;
     }
 
@@ -180,8 +180,8 @@ auto Board::bestColorFor(const Owner &owner) const noexcept -> Color
       }
     }
 
-    log("Gain for " + colorName(gainPerColor[cId].color) + " is "
-        + std::to_string(gainPerColor[cId].amount));
+    debug("Gain for " + colorName(gainPerColor[cId].color) + " is "
+          + std::to_string(gainPerColor[cId].amount));
     usedGains.clear();
     zeroGain &= (gainPerColor[cId].amount == 0);
   }
@@ -246,9 +246,8 @@ void Board::save(const std::string &file) const noexcept
     out.write(raw, size);
   }
 
-  log("Saved content of board with dimensions " + std::to_string(m_width) + "x"
-        + std::to_string(m_height) + " to \"" + file + "\"",
-      utils::Level::Info);
+  info("Saved content of board with dimensions " + std::to_string(m_width) + "x"
+       + std::to_string(m_height) + " to \"" + file + "\"");
 }
 
 void Board::load(const std::string &file)
@@ -285,8 +284,7 @@ void Board::load(const std::string &file)
 
   updateStatus();
 
-  log("Loaded board with dimensions " + std::to_string(m_width) + "x" + std::to_string(m_height),
-      utils::Level::Info);
+  info("Loaded board with dimensions " + std::to_string(m_width) + "x" + std::to_string(m_height));
 }
 
 void Board::initialize()

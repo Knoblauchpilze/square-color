@@ -64,7 +64,7 @@ void TexturePack::draw(olc::PixelGameEngine *pge,
   // Check whether the pack is valid.
   if (s.pack >= static_cast<int>(m_packs.size()))
   {
-    log("Invalid pack " + std::to_string(s.pack) + " to draw sprite", utils::Level::Error);
+    warn("Invalid pack " + std::to_string(s.pack) + " to draw sprite");
     return;
   }
 
@@ -81,7 +81,7 @@ void TexturePack::draw(olc::PixelGameEngine *pge,
   // Check whether the pack is valid.
   if (s.pack >= static_cast<int>(m_packs.size()))
   {
-    log("Invalid pack " + std::to_string(s.pack) + " to draw sprite", utils::Level::Error);
+    warn("Invalid pack " + std::to_string(s.pack) + " to draw sprite");
     return;
   }
 
